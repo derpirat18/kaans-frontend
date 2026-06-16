@@ -12,26 +12,84 @@
  * autenticados puedan verla (se hara cuando exista el login).
  */
 
-function AdminPanel() {
-  return (
-    <div
-      style={{
-        padding: '24px',
-        margin: '24px',
-        border: '2px solid #7f77dd',
-        borderRadius: '8px',
-        fontFamily: 'sans-serif',
-      }}
-    >
-      <h1>Panel de Administracion</h1>
-      <p>Aqui iran el login y la gestion de cursos y usuarios.</p>
+import { useState } from 'react'
 
-      {/*
-        TODO (siguientes pasos):
-        - Construir el formulario de login (email + password).
-        - Llamar a POST /api/auth/login y guardar el token JWT.
-        - Mostrar la gestion solo si hay token valido.
-      */}
+function AdminPanel() {
+  // Cajas de memoria del formulario y la sesion.
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState(null)
+  const [token, setToken] = useState(null)
+
+  // Se ejecuta al hacer clic en "Entrar": envia las credenciales
+  // al backend como datos de formulario (lo que espera OAuth2).
+  function manejarLogin() {
+    setError(null)
+
+    const datos = new URLSearchParams()
+    datos.append('username', email) // el backend llama "username" al email
+    datos.append('password', password)
+
+    fetch('http://127.0.0.1:8000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: datos,
+    })
+      .then((respuesta) => {
+        if (!respuesta.ok) {
+          throw new Error('Credenciales invalidas')
+        }
+        return respuesta.json()
+      })
+      .then((datos) => {
+        setToken(datos.access_token)
+      })
+      .catch((err) => {
+        setError(err.message)
+      })
+  }
+
+  // Si ya hay sesion, mostramos el interior del panel.
+  if (token) {
+    return (
+      <div style={{ padding: '24px', fontFamily: 'sans-serif' }}>
+        <h1>Panel de Administracion</h1>
+        <p style={{ color: 'green' }}>Sesion iniciada correctamente.</p>
+        <p>Aqui ira la gestion de cursos y usuarios.</p>
+      </div>
+    )
+  }
+
+  // Si no hay sesion, mostramos el formulario de login.
+  return (
+    <div style={{ padding: '24px', fontFamily: 'sans-serif', maxWidth: '360px' }}>
+      <h1>Acceso al Panel</h1>
+
+      <div style={{ marginBottom: '12px' }}>
+        <label>Email</label><br />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{ width: '100%', padding: '8px' }}
+        />
+      </div>
+
+      <div style={{ marginBottom: '12px' }}>
+        <label>Contrasena</label><br />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{ width: '100%', padding: '8px' }}
+        />
+      </div>
+
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      <button onClick={manejarLogin} style={{ padding: '8px 16px' }}>
+        Entrar
+      </button>
     </div>
   )
 }
