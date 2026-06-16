@@ -1,25 +1,34 @@
-import { Routes, Route } from 'react-router-dom' // Son componentes que se utilizan para definir las rutas de la aplicación React. Routes es un contenedor para todas las rutas, y Route se utiliza para definir cada ruta individualmente, especificando el path (ruta) y el elemento (componente) que se renderizará cuando se acceda a esa ruta.
+/**
+ * App.jsx — Mapa de rutas de la aplicacion.
+ *
+ * Su unica responsabilidad es declarar QUE componente se muestra para
+ * cada URL. No contiene logica de paginas ni interfaz propia: cada
+ * pagina vive en su propio archivo dentro de src/pages.
+ *
+ * Esta separacion mantiene App.jsx legible aunque la app crezca: para
+ * saber que rutas existen, basta leer este archivo.
+ */
 
-function App() { // Es el componente principal de la aplicación React. Es el punto de entrada para la aplicación y generalmente contiene la estructura general de la interfaz de usuario y la lógica de enrutamiento.
+import { Routes, Route } from 'react-router-dom'
+import PublicHome from './pages/PublicHome.jsx'
+import AdminPanel from './pages/AdminPanel.jsx'
+
+function App() {
+  // <Routes> es el contenedor que decide, segun la URL actual, cual
+  // <Route> mostrar. Solo se renderiza la primera ruta que coincide.
+  //
+  // Cada <Route> asocia un "path" (la URL) con un "element" (el
+  // componente a mostrar). Para agregar una pagina nueva en el futuro,
+  // se crea su componente en src/pages y se anade un <Route> aqui.
   return (
     <Routes>
-      {/* Ruta pública (Landing / Lista de cursos) */}
-      <Route path="/" element={
-        <div style={{ padding: '20px' }}>
-          <h1>Kaans Público</h1>
-          <p>Aquí listaremos los cursos conectando con el backend.</p>
-        </div>
-      } />
+      {/* Ruta publica: landing y futura lista de cursos */}
+      <Route path="/" element={<PublicHome />} />
 
-      {/* Ruta protegida (Panel de Admin) */}
-      <Route path="/admin" element={
-        <div style={{ padding: '20px', border: '2px solid #7f77dd' }}>
-          <h1>Panel de Administración</h1>
-          <p>Aquí irá el login y la gestión.</p>
-        </div>
-      } />
+      {/* Ruta del panel de administracion (login + gestion) */}
+      <Route path="/admin" element={<AdminPanel />} />
     </Routes>
   )
 }
 
-export default App // Es la exportación del componente App, lo que permite que otros archivos importen y utilicen este componente en la aplicación React.
+export default App
