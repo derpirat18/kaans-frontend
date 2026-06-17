@@ -12,22 +12,25 @@
  * autenticados puedan verla (se hara cuando exista el login).
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 function AdminPanel() {
-  // Cajas de memoria del formulario y la sesion.
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
-  const [token, setToken] = useState(null)
+  // El token inicia leyendo localStorage: si habia sesion previa, nace activo.
+  const [token, setToken] = useState(localStorage.getItem('token'))
 
-  // Cajas de memoria para la lista de usuarios.
   const [usuarios, setUsuarios] = useState([])
   const [cargandoUsuarios, setCargandoUsuarios] = useState(false)
 
-  // Pide la lista de usuarios al backend, enviando el token en el
-  // header Authorization (endpoint protegido, solo superadmin).
-  // Recibe el token como parametro para usar el valor recien obtenido.
+  // Al montar: si ya habia un token guardado, cargamos los usuarios.
+  useEffect(() => {
+    if (token) {
+      cargarUsuarios(token)
+    }
+  }, [])
+
   function cargarUsuarios(tokenActual) {
     setCargandoUsuarios(true)
 
@@ -51,13 +54,11 @@ function AdminPanel() {
       })
   }
 
-  // Se ejecuta al hacer clic en "Entrar": envia las credenciales
-  // al backend como datos de formulario (lo que espera OAuth2).
   function manejarLogin() {
     setError(null)
 
     const datos = new URLSearchParams()
-    datos.append('username', email) // el backend llama "username" al email
+    datos.append('username', email)
     datos.append('password', password)
 
     fetch('http://127.0.0.1:8000/api/auth/login', {
@@ -73,14 +74,21 @@ function AdminPanel() {
       })
       .then((datos) => {
         setToken(datos.access_token)
-        cargarUsuarios(datos.access_token) // al entrar, carga los usuarios
+        localStorage.setItem('token', datos.access_token) // persistir
+        cargarUsuarios(datos.access_token)
       })
       .catch((err) => {
         setError(err.message)
       })
   }
 
-  // Si ya hay sesion, mostramos el interior del panel con los usuarios.
+  // Cierra sesion: borra el token persistido y limpia el estado.
+  function cerrarSesion() {
+    localStorage.removeItem('token')
+    setToken(null)
+    setUsuarios([])
+  }
+
   if (token) {
     return (
       <div style={{ padding: '24px', fontFamily: 'sans-serif' }}>
@@ -100,11 +108,14 @@ function AdminPanel() {
             ))}
           </ul>
         )}
+
+        <button onClick={cerrarSesion} style={{ padding: '8px 16px', marginTop: '16px' }}>
+          Cerrar sesion
+        </button>
       </div>
     )
   }
 
-  // Si no hay sesion, mostramos el formulario de login.
   return (
     <div style={{ padding: '24px', fontFamily: 'sans-serif', maxWidth: '360px' }}>
       <h1>Acceso al Panel</h1>
