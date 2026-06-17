@@ -67,6 +67,26 @@ function GestionCursos() {
       .catch((err) => setError(err.message))
   }
 
+  // Borra un curso (DELETE protegido) y refresca la lista.
+  function borrarCurso(slugABorrar) {
+    setError(null)
+    const token = localStorage.getItem('token')
+
+    fetch(`http://127.0.0.1:8000/api/cursos/${slugABorrar}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+      .then((respuesta) => {
+        if (!respuesta.ok) {
+          throw new Error('No se pudo borrar el curso')
+        }
+        cargarCursos()
+      })
+      .catch((err) => setError(err.message))
+  }
+
   return (
     <div style={{ marginTop: '24px' }}>
       <h2>Cursos</h2>
@@ -74,9 +94,12 @@ function GestionCursos() {
       {/* Lista de cursos existentes */}
       <ul>
         {cursos.map((curso) => (
-          <li key={curso.id}>
+          <li key={curso.id} style={{ marginBottom: '6px' }}>
             <strong>{curso.titulo}</strong> — {curso.categoria}{' '}
-            <span style={{ color: '#888' }}>({curso.slug})</span>
+            <span style={{ color: '#888' }}>({curso.slug})</span>{' '}
+            <button onClick={() => borrarCurso(curso.slug)} style={{ marginLeft: '8px' }}>
+              Borrar
+            </button>
           </li>
         ))}
       </ul>
@@ -108,6 +131,7 @@ function GestionCursos() {
         <button onClick={crearCurso} style={{ padding: '8px 16px' }}>
           Crear curso
         </button>
+
       </div>
     </div>
   )
