@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import GestionCursos from '../components/GestionCursos.jsx'
 
 function AdminPanel() {
   const [usuarios, setUsuarios] = useState([])
@@ -64,6 +65,7 @@ function AdminPanel() {
         </ul>
       )}
 
+      <GestionCursos />
       <button onClick={cerrarSesion} style={{ padding: '8px 16px', marginTop: '16px' }}>
         Cerrar sesion
       </button>
