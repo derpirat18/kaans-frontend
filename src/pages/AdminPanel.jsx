@@ -21,6 +21,36 @@ function AdminPanel() {
   const [error, setError] = useState(null)
   const [token, setToken] = useState(null)
 
+  // Cajas de memoria para la lista de usuarios.
+  const [usuarios, setUsuarios] = useState([])
+  const [cargandoUsuarios, setCargandoUsuarios] = useState(false)
+
+  // Pide la lista de usuarios al backend, enviando el token en el
+  // header Authorization (endpoint protegido, solo superadmin).
+  // Recibe el token como parametro para usar el valor recien obtenido.
+  function cargarUsuarios(tokenActual) {
+    setCargandoUsuarios(true)
+
+    fetch('http://127.0.0.1:8000/api/usuarios', {
+      headers: {
+        'Authorization': `Bearer ${tokenActual}`,
+      },
+    })
+      .then((respuesta) => {
+        if (!respuesta.ok) {
+          throw new Error('No se pudieron cargar los usuarios')
+        }
+        return respuesta.json()
+      })
+      .then((datos) => {
+        setUsuarios(datos)
+        setCargandoUsuarios(false)
+      })
+      .catch(() => {
+        setCargandoUsuarios(false)
+      })
+  }
+
   // Se ejecuta al hacer clic en "Entrar": envia las credenciales
   // al backend como datos de formulario (lo que espera OAuth2).
   function manejarLogin() {
@@ -43,19 +73,33 @@ function AdminPanel() {
       })
       .then((datos) => {
         setToken(datos.access_token)
+        cargarUsuarios(datos.access_token) // al entrar, carga los usuarios
       })
       .catch((err) => {
         setError(err.message)
       })
   }
 
-  // Si ya hay sesion, mostramos el interior del panel.
+  // Si ya hay sesion, mostramos el interior del panel con los usuarios.
   if (token) {
     return (
       <div style={{ padding: '24px', fontFamily: 'sans-serif' }}>
         <h1>Panel de Administracion</h1>
         <p style={{ color: 'green' }}>Sesion iniciada correctamente.</p>
-        <p>Aqui ira la gestion de cursos y usuarios.</p>
+
+        <h2>Usuarios</h2>
+        {cargandoUsuarios ? (
+          <p>Cargando usuarios...</p>
+        ) : (
+          <ul>
+            {usuarios.map((usuario) => (
+              <li key={usuario.id}>
+                <strong>{usuario.nombre}</strong> — {usuario.email} ({usuario.rol})
+                {usuario.activo ? '' : ' [inactivo]'}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     )
   }
