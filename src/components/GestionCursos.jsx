@@ -17,6 +17,9 @@ function GestionCursos() {
   const [titulo, setTitulo] = useState('')
   const [categoria, setCategoria] = useState('')
 
+  // Controla si el modal de creacion esta abierto.
+  const [mostrarCrear, setMostrarCrear] = useState(false)
+
   // Estado del modal de edicion.
   const [cursoEditando, setCursoEditando] = useState(null)
   const [editTitulo, setEditTitulo] = useState('')
@@ -67,6 +70,7 @@ function GestionCursos() {
         setSlug('')
         setTitulo('')
         setCategoria('')
+        setMostrarCrear(false)
         cargarCursos()
       })
       .catch((err) => setError(err.message))
@@ -132,6 +136,9 @@ function GestionCursos() {
   return (
     <div style={{ marginTop: '24px' }}>
       <h2>Cursos</h2>
+      <button onClick={() => setMostrarCrear(true)} style={{ marginBottom: '12px' }}>
+        + Nuevo curso
+      </button>
 
       {/* Lista de cursos existentes */}
       <ul>
@@ -149,36 +156,61 @@ function GestionCursos() {
         ))}
       </ul>
 
-      {/* Formulario de creacion */}
-      <h3>Crear curso nuevo</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '360px' }}>
-        <input
-          placeholder="slug (ej. marketing-digital)"
-          value={slug}
-          onChange={(e) => setSlug(e.target.value)}
-          style={{ padding: '8px' }}
-        />
-        <input
-          placeholder="titulo"
-          value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
-          style={{ padding: '8px' }}
-        />
-        <input
-          placeholder="categoria"
-          value={categoria}
-          onChange={(e) => setCategoria(e.target.value)}
-          style={{ padding: '8px' }}
-        />
+      {/* Modal de creacion */}
+      {mostrarCrear && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '24px',
+            borderRadius: '8px',
+            maxWidth: '400px',
+            width: '90%',
+          }}>
+            <h3>Crear curso nuevo</h3>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <input
+                placeholder="slug (ej. marketing-digital)"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                style={{ padding: '8px' }}
+              />
+              <input
+                placeholder="titulo"
+                value={titulo}
+                onChange={(e) => setTitulo(e.target.value)}
+                style={{ padding: '8px' }}
+              />
+              <input
+                placeholder="categoria"
+                value={categoria}
+                onChange={(e) => setCategoria(e.target.value)}
+                style={{ padding: '8px' }}
+              />
 
-        <button onClick={crearCurso} style={{ padding: '8px 16px' }}>
-          Crear curso
-        </button>
-      </div>
+              {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      {/* ← AQUÍ va el modal, después de cerrar el div del formulario */}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={crearCurso} style={{ padding: '8px 16px' }}>
+                  Crear curso
+                </button>
+                <button onClick={() => setMostrarCrear(false)} style={{ padding: '8px 16px' }}>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de edicion */}
       {cursoEditando && (
         <div style={{
           position: 'fixed',
